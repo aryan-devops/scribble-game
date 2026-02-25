@@ -56,24 +56,6 @@ export default function Canvas({ roomCode, isDrawer, disabled }) {
         };
     }, []);
 
-    // Crucial fix for mobile drawing:
-    // React synthetic events are passive, which means e.preventDefault() won't stop scrolling.
-    // We must attach raw DOM events with { passive: false } to guarantee drawing works on phones.
-    // This MUST depend on 'disabled' so it re-attaches correctly when a new player's turn starts.
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas || disabled) return;
-
-        const preventDefault = (e) => e.preventDefault();
-        canvas.addEventListener('touchstart', preventDefault, { passive: false });
-        canvas.addEventListener('touchmove', preventDefault, { passive: false });
-
-        return () => {
-            canvas.removeEventListener('touchstart', preventDefault);
-            canvas.removeEventListener('touchmove', preventDefault);
-        };
-    }, [disabled]);
-
     // Helper to re-scale window resizes
     useEffect(() => {
         const handleResize = () => {
