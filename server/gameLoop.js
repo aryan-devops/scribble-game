@@ -4,6 +4,20 @@ export const getPublicRoom = (room) => {
     // DO NOT expose `lines` in the public room object, because it can have thousands of items 
     // and passing it continuously causes extreme network and React re-render lag!
     const { turnTimer, chooseTimer, lines, ...publicRoom } = room;
+
+    if (publicRoom.currentWord && publicRoom.status === 'drawing') {
+        const words = publicRoom.currentWord.split(' ');
+        const revealed = publicRoom.revealedWords || [];
+
+        publicRoom.wordHint = words.map(w => {
+            if (revealed.includes(w.toLowerCase())) {
+                return w.toUpperCase();
+            } else {
+                return w.replace(/[a-zA-Z0-9]/g, '_ ');
+            }
+        }).join('   ');
+    }
+
     return publicRoom;
 };
 
@@ -12,6 +26,7 @@ export const startGame = (io, room) => {
     room.status = 'choosing_word';
     room.lines = [];
     room.messages = [];
+    room.revealedWords = [];
     room.players.forEach(p => { p.score = 0; p.hasGuessed = false; });
 
     startTurn(io, room);
@@ -20,6 +35,7 @@ export const startGame = (io, room) => {
 export const startTurn = (io, room) => {
     room.lines = [];
     room.status = 'choosing_word';
+    room.revealedWords = [];
     room.players.forEach(p => p.hasGuessed = false);
 
     room.players.forEach((p, idx) => p.isDrawer = (idx === room.drawerIndex));

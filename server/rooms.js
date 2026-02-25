@@ -108,6 +108,19 @@ export const handleConnections = (io) => {
                         nextTurn(io, room);
                     }
                     return;
+                } else if (!player.hasGuessed && room.currentWord) {
+                    const phraseWords = room.currentWord.toLowerCase().split(' ');
+                    const guessText = text.toLowerCase().trim();
+
+                    if (phraseWords.length > 1 && phraseWords.includes(guessText)) {
+                        if (!room.revealedWords) room.revealedWords = [];
+                        if (!room.revealedWords.includes(guessText)) {
+                            room.revealedWords.push(guessText);
+                            io.to(roomCode).emit('system-message', { text: `${player.name} revealed a word!`, type: 'success' });
+                            io.to(roomCode).emit('room-update', getPublicRoom(room));
+                            return; // Don't allow the correct partial word to show in chat
+                        }
+                    }
                 }
             }
 

@@ -158,15 +158,15 @@ export default function GameRoom({ room, player, onLeave }) {
                 </div>
 
                 {/* Center column: Canvas */}
-                <div className="flex-1 relative min-h-[350px] sm:min-h-[400px] flex flex-col order-1 lg:order-2">
+                <div className="flex-1 relative min-h-[55vh] sm:min-h-[60vh] lg:min-h-[500px] flex flex-col order-1 lg:order-2">
                     {/* Status Bar above canvas */}
                     {room.status === 'drawing' && (
                         <div className="absolute top-0 left-0 right-0 p-3 bg-gradient-to-b from-black/80 to-transparent z-10 flex justify-between items-center pointer-events-none">
                             <div className="text-white font-black text-xl tracking-[0.2em] bg-black/50 px-6 py-2 rounded-full border border-white/10 glass-panel">
                                 {isDrawer ? (
-                                    <span className="text-[var(--neon-primary)]">{room.currentWord.toUpperCase()}</span>
+                                    <span className="text-[var(--neon-primary)]">{room.currentWord?.toUpperCase()}</span>
                                 ) : (
-                                    <span>Wait... what is that?</span>
+                                    <span className="tracking-[0.2em] whitespace-pre text-yellow-300 font-mono text-shadow-glow">{room.wordHint || '...'}</span>
                                 )}
                             </div>
                             <div className="flex items-center gap-2 bg-black/50 px-4 py-2 rounded-full border border-red-500/30 text-red-400 glass-panel">
