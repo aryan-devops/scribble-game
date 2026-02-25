@@ -49,10 +49,19 @@ export default function Canvas({ roomCode, isDrawer, disabled }) {
         socket.on('clear-canvas', handleClearCanvas);
         socket.on('canvas-history', handleCanvasHistory);
 
+        // Crucial fix for mobile drawing:
+        // React synthetic events are passive, which means e.preventDefault() won't stop scrolling.
+        // We must attach raw DOM events with { passive: false } to guarantee drawing works on phones.
+        const preventDefault = (e) => e.preventDefault();
+        canvas.addEventListener('touchstart', preventDefault, { passive: false });
+        canvas.addEventListener('touchmove', preventDefault, { passive: false });
+
         return () => {
             socket.off('draw-line', handleDrawLine);
             socket.off('clear-canvas', handleClearCanvas);
             socket.off('canvas-history', handleCanvasHistory);
+            canvas.removeEventListener('touchstart', preventDefault);
+            canvas.removeEventListener('touchmove', preventDefault);
         };
     }, []);
 
@@ -208,7 +217,7 @@ export default function Canvas({ roomCode, isDrawer, disabled }) {
             <div className="flex-1 relative w-full h-full cursor-crosshair touch-none">
                 <canvas
                     ref={canvasRef}
-                    className="absolute inset-0 w-full h-full"
+                    className="absolute inset-0 w-full h-full touch-none"
                     onMouseDown={startDrawing}
                     onMouseMove={draw}
                     onMouseUp={stopDrawing}
