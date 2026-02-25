@@ -158,7 +158,7 @@ export default function GameRoom({ room, player, onLeave }) {
                 </div>
 
                 {/* Center column: Canvas */}
-                <div className="flex-1 relative min-h-[55vh] sm:min-h-[60vh] lg:min-h-[500px] flex flex-col order-1 lg:order-2">
+                <div className="w-full flex-shrink-0 relative h-[450px] sm:h-[550px] lg:flex-1 lg:h-auto lg:min-h-[500px] flex flex-col order-1 lg:order-2">
                     {/* Status Bar above canvas */}
                     {room.status === 'drawing' && (
                         <div className="absolute top-0 left-0 right-0 p-3 bg-gradient-to-b from-black/80 to-transparent z-10 flex justify-between items-center pointer-events-none">
@@ -195,7 +195,7 @@ export default function GameRoom({ room, player, onLeave }) {
                 </div>
 
                 {/* Right column: Chat */}
-                <div className="w-full lg:w-80 flex-shrink-0 flex flex-col min-h-[250px] sm:min-h-[300px] order-2 lg:order-3">
+                <div className="w-full lg:w-80 flex-shrink-0 flex flex-col h-[350px] sm:h-[400px] lg:h-auto lg:min-h-[300px] order-2 lg:order-3">
                     <Chat
                         roomCode={room.code}
                         disabled={room.status !== 'drawing' || (isDrawer && room.status === 'drawing')}
