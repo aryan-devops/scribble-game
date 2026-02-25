@@ -73,7 +73,7 @@ function App() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-pink-500/10 blur-[120px] rounded-full" />
       </div>
 
-      <main className="relative z-10 container mx-auto px-4 py-8 h-screen flex flex-col">
+      <main className="relative z-10 container mx-auto px-2 sm:px-4 py-4 sm:py-8 min-h-screen flex flex-col">
         {room ? (
           <GameRoom room={room} player={player} onLeave={handleLeave} />
         ) : (

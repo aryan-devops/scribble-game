@@ -120,19 +120,19 @@ export default function Lobby({ onJoin }) {
                             <div className="flex-grow border-t border-white/10"></div>
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                             <input
                                 type="text"
                                 value={roomCode}
                                 onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
                                 placeholder="ROOM CODE"
-                                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[var(--neon-secondary)] focus:ring-1 focus:ring-[var(--neon-secondary)] transition-all font-bold tracking-widest text-center uppercase"
+                                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[var(--neon-secondary)] focus:ring-1 focus:ring-[var(--neon-secondary)] transition-all font-bold tracking-widest text-center uppercase w-full"
                                 maxLength={6}
                             />
                             <button
                                 onClick={handleJoinRoom}
                                 disabled={loading || !roomCode}
-                                className="bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-6 rounded-lg transition-all border border-white/10 disabled:opacity-50"
+                                className="bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-6 rounded-lg transition-all border border-white/10 disabled:opacity-50 w-full sm:w-auto"
                             >
                                 Join
                             </button>

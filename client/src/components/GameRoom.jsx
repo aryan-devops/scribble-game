@@ -97,10 +97,10 @@ export default function GameRoom({ room, player, onLeave }) {
     };
 
     return (
-        <div className="flex flex-col h-full overflow-hidden max-w-7xl mx-auto w-full gap-4 pb-4">
+        <div className="flex flex-col flex-1 max-w-7xl mx-auto w-full gap-4 pb-4">
             {/* Top Header Bar */}
-            <div className="glass-panel px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-[0_4px_30px_rgba(0,0,0,0.5)] z-20">
-                <div className="flex items-center gap-6">
+            <div className="glass-panel px-4 sm:px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-[0_4px_30px_rgba(0,0,0,0.5)] z-20">
+                <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-6 w-full md:w-auto">
                     <div className="flex items-center gap-3 bg-black/40 px-4 py-2 rounded-lg border border-white/5">
                         <span className="text-sm font-bold text-[var(--text-secondary)] uppercase tracking-wider">Room</span>
                         <span className="text-2xl font-black text-[var(--neon-primary)] tracking-widest text-shadow-glow">{room.code}</span>
@@ -113,7 +113,7 @@ export default function GameRoom({ room, player, onLeave }) {
                         </button>
                     </div>
 
-                    <div className="flex items-center gap-2 text-white bg-black/40 px-4 py-2 rounded-lg border border-white/5">
+                    <div className="flex items-center gap-2 text-white bg-black/40 px-3 sm:px-4 py-2 rounded-lg border border-white/5">
                         <Users className="w-5 h-5 text-[var(--neon-secondary)]" />
                         <span className="font-bold">{room.players.length}/10</span>
                     </div>
@@ -125,7 +125,7 @@ export default function GameRoom({ room, player, onLeave }) {
                     </div>
                 )}
 
-                <div className="flex gap-4 items-center">
+                <div className="flex flex-wrap justify-center gap-3 sm:gap-4 items-center w-full md:w-auto">
                     {room.status === 'playing' || room.status === 'drawing' ? (
                         <div className="flex flex-col items-center">
                             <span className="text-[10px] uppercase font-bold text-[var(--text-secondary)]">Round</span>
@@ -150,10 +150,10 @@ export default function GameRoom({ room, player, onLeave }) {
             </div>
 
             {/* Main Game Area */}
-            <div className="flex flex-col lg:flex-row flex-1 min-h-0 gap-4">
+            <div className="flex flex-col lg:flex-row flex-1 gap-4">
 
                 {/* Left column: Leaderboard */}
-                <div className="w-full lg:w-64 flex-shrink-0 flex flex-col gap-4 order-3 lg:order-1 h-48 lg:h-auto">
+                <div className="w-full lg:w-64 flex-shrink-0 flex flex-col gap-4 order-3 lg:order-1">
                     <Leaderboard players={room.players} />
                 </div>
 
