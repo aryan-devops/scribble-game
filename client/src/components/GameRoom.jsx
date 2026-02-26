@@ -1,17 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { socket } from '../socket';
 import Canvas from './Canvas';
 import Chat from './Chat';
 import Leaderboard from './Leaderboard';
 import { Share2, Clock, Check, Users, PlayCircle, Trophy } from 'lucide-react';
+import { playTickSound, playJoinSound } from '../utils/audio';
 
 export default function GameRoom({ room, player, onLeave }) {
     const [messages, setMessages] = useState(room.messages || []);
     const [systemMessage, setSystemMessage] = useState(null);
     const [copied, setCopied] = useState(false);
+    const [timeLeft, setTimeLeft] = useState(0);
 
+    const prevPlayersRef = useRef(room.players?.length || 0);
     const isDrawer = player.id === room.players[room.drawerIndex]?.id;
     const isHost = player.id === room.players[0]?.id;
+
+    // Audio effects for players joining
+    useEffect(() => {
+        if (room.players?.length > prevPlayersRef.current) {
+            playJoinSound();
+        }
+        prevPlayersRef.current = room.players?.length;
+    }, [room.players]);
 
     useEffect(() => {
         const handleChat = (msg) => {
@@ -32,6 +43,24 @@ export default function GameRoom({ room, player, onLeave }) {
             socket.off('system-message', handleSysMsg);
         };
     }, []);
+
+    useEffect(() => {
+        let interval;
+        if (room.status === 'drawing' && room.roundEndTime) {
+            setTimeLeft(Math.max(0, Math.ceil((room.roundEndTime - Date.now()) / 1000)));
+            interval = setInterval(() => {
+                const remaining = Math.max(0, Math.ceil((room.roundEndTime - Date.now()) / 1000));
+                setTimeLeft(remaining);
+                if (remaining <= 5 && remaining > 0) {
+                    playTickSound();
+                }
+                if (remaining <= 0) clearInterval(interval);
+            }, 1000);
+        } else {
+            setTimeLeft(0);
+        }
+        return () => clearInterval(interval);
+    }, [room.status, room.roundEndTime]);
 
     const copyRoomCode = () => {
         navigator.clipboard.writeText(room.code);
@@ -164,15 +193,10 @@ export default function GameRoom({ room, player, onLeave }) {
             </div>
 
             {/* Main Game Area */}
-            <div className="flex flex-col lg:flex-row flex-1 gap-4">
+            <div className="flex flex-col lg:flex-row flex-1 gap-2 lg:gap-4 w-full h-[75vh] lg:h-[600px] min-h-0 items-center lg:items-start justify-center">
 
-                {/* Left column: Leaderboard */}
-                <div className="w-full lg:w-64 flex-shrink-0 flex flex-col gap-4 order-3 lg:order-1">
-                    <Leaderboard players={room.players} />
-                </div>
-
-                {/* Center column: Canvas */}
-                <div className="w-full flex-shrink-0 relative h-[450px] sm:h-[550px] lg:flex-1 lg:h-auto lg:min-h-[500px] flex flex-col gap-2 order-1 lg:order-2">
+                {/* Top/Center: Canvas (order 1 on mobile, 2 on desktop) */}
+                <div className="w-full sm:w-[800px] sm:max-w-full relative flex-none aspect-[4/3] flex flex-col gap-2 order-1 lg:order-2 shrink-0">
                     {/* Status Bar above canvas */}
                     {room.status === 'drawing' && (
                         <div className="w-full flex justify-between items-center bg-[#1a1c29] border border-[var(--neon-primary)]/30 p-2 sm:p-3 rounded-xl z-10 shadow-lg shrink-0">
@@ -185,7 +209,7 @@ export default function GameRoom({ room, player, onLeave }) {
                             </div>
                             <div className="flex items-center gap-1.5 sm:gap-2 bg-black/50 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-red-500/30 text-red-400 glass-panel text-xs sm:text-base shrink-0">
                                 <Clock className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
-                                <span className="font-bold font-mono">Drawing</span>
+                                <span className="font-bold font-mono">{timeLeft}s</span>
                             </div>
                         </div>
                     )}
@@ -208,13 +232,23 @@ export default function GameRoom({ room, player, onLeave }) {
                     )}
                 </div>
 
-                {/* Right column: Chat */}
-                <div className="w-full lg:w-80 flex-shrink-0 flex flex-col h-[350px] sm:h-[400px] lg:h-auto lg:min-h-[300px] order-2 lg:order-3">
-                    <Chat
-                        roomCode={room.code}
-                        disabled={room.status !== 'drawing' || (isDrawer && room.status === 'drawing')}
-                        messages={messages}
-                    />
+                {/* Bottom Wrapper on Mobile / Contents on Desktop (to split Leaderboard left, chat right) */}
+                <div className="flex flex-row flex-1 gap-2 order-2 lg:contents w-full">
+
+                    {/* Leaderboard (Left on mobile, Left on desktop) */}
+                    <div className="w-[35%] sm:w-2/5 lg:w-64 flex-shrink-0 flex flex-col gap-2 lg:gap-4 lg:order-1 h-[35vh] lg:h-[600px] min-h-[200px] overflow-y-auto">
+                        <Leaderboard players={room.players} />
+                    </div>
+
+                    {/* Chat (Right on mobile, Right on desktop) */}
+                    <div className="w-[65%] sm:w-3/5 lg:w-[350px] flex-shrink-0 flex flex-col lg:order-3 h-[35vh] lg:h-[600px] min-h-[200px]">
+                        <Chat
+                            roomCode={room.code}
+                            disabled={room.status !== 'drawing' || (isDrawer && room.status === 'drawing')}
+                            messages={messages}
+                        />
+                    </div>
+
                 </div>
 
             </div>

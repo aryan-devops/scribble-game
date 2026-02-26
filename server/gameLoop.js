@@ -58,6 +58,13 @@ export const startTurn = (io, room) => {
     room.revealedWords = [];
     room.players.forEach(p => p.hasGuessed = false);
 
+    if (room.players.length === 0) return;
+    if (room.drawerIndex >= room.players.length) {
+        room.drawerIndex = 0;
+        // If it rolled over during a disconnect, we might need to increment round,
+        // but for simplicity, just wrap it gracefully so we don't crash.
+    }
+
     room.players.forEach((p, idx) => p.isDrawer = (idx === room.drawerIndex));
     const drawer = room.players[room.drawerIndex];
 
