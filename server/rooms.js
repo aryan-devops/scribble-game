@@ -33,6 +33,7 @@ export const handleConnections = (io) => {
                 drawerIndex: 0,
                 messages: [],
                 lines: [],
+                revealedLetters: [],
                 roundEndTime: null
             };
 
@@ -117,9 +118,25 @@ export const handleConnections = (io) => {
                         if (!room.revealedWords.includes(guessText)) {
                             room.revealedWords.push(guessText);
                             io.to(roomCode).emit('system-message', { text: `${player.name} revealed a word!`, type: 'success' });
-                            io.to(roomCode).emit('room-update', getPublicRoom(room));
-                            return; // Don't allow the correct partial word to show in chat
                         }
+                    }
+
+                    // Check for partial letter matches
+                    let updatedHint = false;
+                    if (!room.revealedLetters) room.revealedLetters = [];
+                    for (let i = 0; i < Math.min(guessText.length, room.currentWord.length); i++) {
+                        if (guessText[i] === room.currentWord[i].toLowerCase() && guessText[i] !== ' ') {
+                            if (!room.revealedLetters[i]) {
+                                room.revealedLetters[i] = true;
+                                updatedHint = true;
+                            }
+                        }
+                    }
+
+                    if (updatedHint || (phraseWords.length > 1 && phraseWords.includes(guessText))) {
+                        io.to(roomCode).emit('room-update', getPublicRoom(room));
+                        // Prevent the exact matched letters/words message from showing in chat if we just want it to be a hint update
+                        // (We still let the chat go through for partial letters, since they might be guessing full words slightly wrong)
                     }
                 }
             }
@@ -173,12 +190,33 @@ export const handleConnections = (io) => {
             }
         });
 
+        socket.on('play-again', ({ roomCode }) => {
+            const room = rooms.get(roomCode);
+            if (room && room.players[0].id === socket.id) {
+                room.status = 'waiting';
+                room.currentRound = 0;
+                room.currentWord = '';
+                room.lines = [];
+                room.messages = [];
+                room.drawerIndex = 0;
+                room.revealedWords = [];
+                room.revealedLetters = [];
+                room.players.forEach(p => {
+                    p.score = 0;
+                    p.isDrawer = false;
+                    p.hasGuessed = false;
+                });
+                io.to(roomCode).emit('room-update', getPublicRoom(room));
+                io.to(roomCode).emit('system-message', { text: `Host restarted the match!`, type: 'success' });
+            }
+        });
+
         socket.on('word-selected', ({ roomCode, word }) => {
             const room = rooms.get(roomCode);
             if (room && room.players.find(p => p.id === socket.id)?.isDrawer) {
                 room.currentWord = word;
                 room.status = 'drawing';
-                room.roundEndTime = Date.now() + 60000;
+                room.roundEndTime = Date.now() + 100000;
                 io.to(roomCode).emit('room-update', getPublicRoom(room));
                 io.to(roomCode).emit('system-message', { text: `Drawer has selected a word!`, type: 'info' });
 
@@ -187,7 +225,7 @@ export const handleConnections = (io) => {
                         io.to(roomCode).emit('system-message', { text: `Time's up! The word was ${room.currentWord}`, type: 'error' });
                         nextTurn(io, room);
                     }
-                }, 60000);
+                }, 100000);
             }
         });
 

@@ -6,16 +6,36 @@ export const getPublicRoom = (room) => {
     const { turnTimer, chooseTimer, lines, ...publicRoom } = room;
 
     if (publicRoom.currentWord && publicRoom.status === 'drawing') {
-        const words = publicRoom.currentWord.split(' ');
+        const revealedLetters = publicRoom.revealedLetters || [];
         const revealed = publicRoom.revealedWords || [];
 
-        publicRoom.wordHint = words.map(w => {
-            if (revealed.includes(w.toLowerCase())) {
-                return w.toUpperCase();
-            } else {
-                return w.replace(/[a-zA-Z0-9]/g, '_ ');
+        let hint = '';
+        let wordStartIndex = 0;
+        const wordsLower = publicRoom.currentWord.toLowerCase().split(' ');
+
+        // Map the \`revealedWords\` into \`revealedLetters\` temporarily for display
+        for (let w of wordsLower) {
+            if (revealed.includes(w)) {
+                for (let i = 0; i < w.length; i++) {
+                    revealedLetters[wordStartIndex + i] = true;
+                }
             }
-        }).join('   ');
+            wordStartIndex += w.length + 1; // +1 for the space
+        }
+
+        for (let i = 0; i < publicRoom.currentWord.length; i++) {
+            const char = publicRoom.currentWord[i];
+            if (char === ' ') {
+                hint += '   ';
+            } else {
+                if (revealedLetters[i]) {
+                    hint += char.toUpperCase() + ' ';
+                } else {
+                    hint += '_ ';
+                }
+            }
+        }
+        publicRoom.wordHint = hint.trimEnd();
     }
 
     return publicRoom;
@@ -52,7 +72,7 @@ export const startTurn = (io, room) => {
         if (room.status === 'choosing_word' && room.currentWord === '') {
             room.currentWord = room.wordChoices[0];
             room.status = 'drawing';
-            room.roundEndTime = Date.now() + 60000;
+            room.roundEndTime = Date.now() + 100000;
             io.to(room.code).emit('room-update', getPublicRoom(room));
             io.to(room.code).emit('system-message', { text: `Drawer took too long, a word was randomly selected!`, type: 'info' });
 
@@ -61,7 +81,7 @@ export const startTurn = (io, room) => {
                     io.to(room.code).emit('system-message', { text: `Time's up! The word was ${room.currentWord}`, type: 'error' });
                     nextTurn(io, room);
                 }
-            }, 60000);
+            }, 100000);
         }
     }, 15000);
 };
@@ -87,7 +107,7 @@ export const checkGuess = (room, player, guess) => {
         player.hasGuessed = true;
 
         const timeLeft = Math.max(0, room.roundEndTime - Date.now());
-        const points = Math.floor((timeLeft / 60000) * 500) + 100; // 100 to 600
+        const points = Math.floor((timeLeft / 100000) * 500) + 100; // 100 to 600
         player.score += points;
 
         const drawer = room.players.find(p => p.isDrawer);

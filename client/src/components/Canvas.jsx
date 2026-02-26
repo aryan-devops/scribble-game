@@ -142,7 +142,7 @@ export default function Canvas({ roomCode, isDrawer, disabled }) {
     };
 
     return (
-        <div className={`relative flex flex-col h-full w-full bg-[#1a1c29] rounded-xl overflow-hidden border ${isDrawer && !disabled ? 'border-[var(--neon-primary)]' : 'border-white/10'} shadow-lg`}>
+        <div className={`relative flex flex-col flex-1 min-h-0 w-full bg-[#1a1c29] rounded-xl overflow-hidden border ${isDrawer && !disabled ? 'border-[var(--neon-primary)]' : 'border-white/10'} shadow-lg`}>
             {/* Tools Panel */}
             <div className="flex bg-black/40 p-2 sm:p-3 border-b border-white/5 items-center justify-between z-10 flex-wrap gap-2">
                 <div className="flex items-center gap-2 flex-wrap flex-1">

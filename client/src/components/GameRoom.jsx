@@ -53,14 +53,28 @@ export default function GameRoom({ room, player, onLeave }) {
             return (
                 <div className="absolute inset-0 bg-black/80 backdrop-blur-md z-30 flex flex-col items-center justify-center p-8 text-center rounded-xl border border-[var(--neon-primary)]/50">
                     <Trophy className="w-24 h-24 text-yellow-400 mb-6 drop-shadow-[0_0_20px_rgba(250,204,21,0.5)]" />
-                    <h1 className="text-4xl font-black text-white mb-2 tracking-widest">GAME OVER</h1>
-                    <p className="text-xl text-[var(--text-secondary)] mb-8">Let's see who won!</p>
-                    <button
-                        onClick={onLeave}
-                        className="bg-[var(--neon-primary)] text-slate-900 font-bold px-8 py-3 rounded-full hover:scale-105 transition-transform"
-                    >
-                        Back to Lobby
-                    </button>
+                    <h1 className="text-4xl text-white mb-2 font-black tracking-widest text-shadow-glow">GAME OVER</h1>
+                    <p className="text-xl text-[var(--text-secondary)] mb-8 font-bold">Look at the final scores!</p>
+                    <div className="flex gap-4">
+                        {isHost ? (
+                            <button
+                                onClick={() => socket.emit('play-again', { roomCode: room.code })}
+                                className="bg-[var(--neon-primary)] text-slate-900 font-bold px-8 py-3 rounded-full hover:scale-105 transition-transform shadow-[0_0_15px_rgba(0,240,255,0.4)]"
+                            >
+                                Play Again
+                            </button>
+                        ) : (
+                            <div className="bg-white/10 text-white font-bold px-8 py-3 rounded-full animate-pulse border border-white/20">
+                                Waiting for Host...
+                            </div>
+                        )}
+                        <button
+                            onClick={onLeave}
+                            className="bg-red-500/20 text-red-300 font-bold px-8 py-3 rounded-full hover:bg-red-500/40 border border-red-500/30 transition-colors"
+                        >
+                            Leave Room
+                        </button>
+                    </div>
                 </div>
             );
         }
@@ -158,20 +172,20 @@ export default function GameRoom({ room, player, onLeave }) {
                 </div>
 
                 {/* Center column: Canvas */}
-                <div className="w-full flex-shrink-0 relative h-[450px] sm:h-[550px] lg:flex-1 lg:h-auto lg:min-h-[500px] flex flex-col order-1 lg:order-2">
+                <div className="w-full flex-shrink-0 relative h-[450px] sm:h-[550px] lg:flex-1 lg:h-auto lg:min-h-[500px] flex flex-col gap-2 order-1 lg:order-2">
                     {/* Status Bar above canvas */}
                     {room.status === 'drawing' && (
-                        <div className="absolute top-0 left-0 right-0 p-3 bg-gradient-to-b from-black/80 to-transparent z-10 flex justify-between items-center pointer-events-none">
-                            <div className="text-white font-black text-xl tracking-[0.2em] bg-black/50 px-6 py-2 rounded-full border border-white/10 glass-panel">
+                        <div className="w-full flex justify-between items-center bg-[#1a1c29] border border-[var(--neon-primary)]/30 p-2 sm:p-3 rounded-xl z-10 shadow-lg shrink-0">
+                            <div className="text-white font-black text-lg sm:text-xl tracking-[0.1em] sm:tracking-[0.2em] bg-black/50 px-3 sm:px-6 py-1.5 sm:py-2 rounded-full border border-white/10 glass-panel truncate max-w-[60%] sm:max-w-[75%] text-center">
                                 {isDrawer ? (
                                     <span className="text-[var(--neon-primary)]">{room.currentWord?.toUpperCase()}</span>
                                 ) : (
-                                    <span className="tracking-[0.2em] whitespace-pre text-yellow-300 font-mono text-shadow-glow">{room.wordHint || '...'}</span>
+                                    <span className="tracking-[0.1em] sm:tracking-[0.2em] whitespace-pre text-yellow-300 font-mono text-shadow-glow">{room.wordHint || '...'}</span>
                                 )}
                             </div>
-                            <div className="flex items-center gap-2 bg-black/50 px-4 py-2 rounded-full border border-red-500/30 text-red-400 glass-panel">
-                                <Clock className="w-5 h-5 animate-pulse" />
-                                <span className="font-bold font-mono">Drawing...</span>
+                            <div className="flex items-center gap-1.5 sm:gap-2 bg-black/50 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-red-500/30 text-red-400 glass-panel text-xs sm:text-base shrink-0">
+                                <Clock className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
+                                <span className="font-bold font-mono">Drawing</span>
                             </div>
                         </div>
                     )}
